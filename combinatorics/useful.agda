@@ -10,13 +10,24 @@ open import Relation.Binary.PropositionalEquality
 
 --------------------------------------------------------------------------------
 
-Nat : Set
-Nat = ℕ
-
 -- just a shorthand for composing equalities
 infixr 3 _∙_
 _∙_ : {A : Set} -> {a b c : A} -> (a ≡ b) -> (b ≡ c) -> (a ≡ c)
 _∙_ = trans
+
+--------------------------------------------------------------------------------
+
+Nat : Set
+Nat = ℕ
+
+n+0 : (n : Nat) -> n + 0 ≡ n
+n+0 n = +-identityʳ n
+
+n+1 : (n : Nat) -> n + 1 ≡ suc n
+n+1 n = +-suc n 0 ∙ cong suc (n+0 n)  
+
+n+suc : (n m : Nat) -> n + suc m ≡ suc (n + m)
+n+suc = +-suc
 
 --------------------------------------------------------------------------------
 
@@ -28,3 +39,6 @@ uninj₂≡ refl = refl
 
 inj₁≢inj₂ : {A B : Set} -> {a : A} -> {b : B} -> inj₁ a ≢ inj₂ b
 inj₁≢inj₂ ()
+
+
+--------------------------------------------------------------------------------

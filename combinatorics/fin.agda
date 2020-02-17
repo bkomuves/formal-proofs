@@ -1,4 +1,6 @@
 
+{-# OPTIONS --rewriting #-}
+
 -- The sets {0,1,...,n-1} 
 
 open import Data.Nat
@@ -7,8 +9,11 @@ open import Data.Vec.Base
 
 open import Data.Empty    using ( ⊥ ; ⊥-elim )
 open import Data.Sum.Base using ( _⊎_ ; inj₁ ; inj₂ )
+open import Data.Product  using ( Σ ; _,_ )
 
 open import Relation.Binary.PropositionalEquality
+
+{-# BUILTIN REWRITE _≡_ #-}
 
 open import useful
 
@@ -50,6 +55,9 @@ fsuc≢fzero ()
 
 finj≡fzero : {n : Nat} {k : Fin₁ n} -> finj k ≡ fzero -> k ≡ fzero
 finj≡fzero {n} {fzero} refl = refl
+
+finj≡fsuc : {n : Nat} {k l : Fin₁ n} -> finj k ≡ fsuc l -> Σ (Fin n) (λ k₁ -> finj k₁ ≡ l)
+finj≡fsuc {n} {fsuc k₁} refl = (k₁ , refl)
 
 finj≢fn : {n : Nat} (k : Fin n) -> finj k ≢ fn n
 finj≢fn {suc n₁} fzero     = fzero≢fsuc 
