@@ -151,6 +151,15 @@ size-is-invariant : {A B : Set} -> {n m : Nat} -> A ⊢ n -> B ⊢ m -> A ⇔ B 
 size-is-invariant φ ψ θ = size-is-well-defined φ (θ ⊙ ψ)
 
 --------------------------------------------------------------------------------
+-- Fin vs. pairs
+
+{-
+Fin⇔[A+B] : {n : Nat} -> Fin n ⇔ [A+B]≡ n
+Fin⇔[A+B] {n} = mkIso Fin⇒[A+B] [A+B]⇒Fin prf₁ prf₂ where
+  prf₁ : {x : Fin n} -> [A+B]⇒Fin (Fin⇒[A+B]
+-}
+
+--------------------------------------------------------------------------------
 -- zero and one
 
 ⊥-size : ⊥ ⊢ 0

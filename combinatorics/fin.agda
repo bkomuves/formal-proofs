@@ -180,3 +180,83 @@ x~finjx (fsuc x) = ~suc (x~finjx x)
 ~contra₁ {A} {n} {k} heq = ~contra {A} {suc n} {k} heq
 
 --------------------------------------------------------------------------------
+-- partitioning {0..n} into two parts
+
+-- `(a,b)` pairs with the equality `a + b ≡ n`
+data [A+B]≡ : Nat -> Set where
+  z+z  : [A+B]≡ zero
+  sucA : {n : Nat} -> [A+B]≡ n -> [A+B]≡ (suc n)
+  sucB : {n : Nat} -> [A+B]≡ n -> [A+B]≡ (suc n)
+
+postulate
+  sucA∘sucB≡sucB∘sucA : {n : Nat} -> {ab : [A+B]≡ n} -> sucA (sucB ab) ≡ sucB (sucA ab)  
+
+{-# REWRITE sucA∘sucB≡sucB∘sucA #-}
+
+πA : {n : Nat} -> [A+B]≡ n -> Nat
+πA z+z       = zero
+πA (sucA ab) = suc (πA ab)
+πA (sucB ab) =      πA ab 
+
+πB : {n : Nat} -> [A+B]≡ n -> Nat
+πB z+z       = zero
+πB (sucA ab) =      πB ab 
+πB (sucB ab) = suc (πB ab) 
+
+[A+B]-proof : {n : Nat} -> (ab : [A+B]≡ n) -> πA ab + πB ab ≡ n
+[A+B]-proof {n} z+z        = refl
+[A+B]-proof {n} (sucA ab₁) = cong suc ([A+B]-proof ab₁) 
+[A+B]-proof {n} (sucB ab₁) = n+suc _ _ ∙ cong suc ([A+B]-proof ab₁)
+
+--------------------------------------------------------------------------------
+
+[N+0] : (n : Nat) -> [A+B]≡ n
+[N+0] zero     = z+z
+[N+0] (suc n₁) = sucA ([N+0] n₁)
+
+[0+N] : (n : Nat) -> [A+B]≡ n
+[0+N] zero     = z+z
+[0+N] (suc n₁) = sucB ([0+N] n₁)
+
+--------------------------------------------------------------------------------
+-- pairs vs Fin
+
+πA′ : {n : Nat} -> [A+B]≡ n -> Fin₁ n
+πA′ z+z       = fzero
+πA′ (sucA ab) = fsuc (πA′ ab)
+πA′ (sucB ab) = finj (πA′ ab) 
+
+πB′ : {n : Nat} -> [A+B]≡ n -> Fin₁ n
+πB′ z+z       = fzero
+πB′ (sucA ab) = finj (πB′ ab) 
+πB′ (sucB ab) = fsuc (πB′ ab) 
+
+--------------------------------------------------------------------------------
+
+-- maps k to a
+Fin₁⇒[A+B] : {n : Nat} -> Fin₁ n -> [A+B]≡ n
+Fin₁⇒[A+B] {n}      fzero     = [0+N] n
+Fin₁⇒[A+B] {suc n₁} (fsuc k₁) = sucA (Fin₁⇒[A+B] {n₁} k₁)
+
+finj⇒[A+B] : {n : Nat} -> (k : Fin₁ n) -> Fin₁⇒[A+B] (finj k) ≡ sucB (Fin₁⇒[A+B] k)
+finj⇒[A+B] {zero  } fzero     = refl
+finj⇒[A+B] {suc n₁} fzero     = refl
+finj⇒[A+B] {suc n₁} (fsuc k₁) with finj⇒[A+B] {n₁} k₁
+... | prf₁ rewrite prf₁ = refl                -- we use the rewrite rule here!!!
+ 
+-- maps a to k
+[A+B]⇒Fin₁ : {n : Nat} -> [A+B]≡ n -> Fin₁ n
+[A+B]⇒Fin₁ = πA′
+
+Fin₁⟲[A+B] : {n : Nat} -> (x : Fin₁ n) -> [A+B]⇒Fin₁ (Fin₁⇒[A+B] x) ≡ x
+Fin₁⟲[A+B] {zero  } fzero     = refl
+Fin₁⟲[A+B] {suc n₁} fzero     = cong finj (Fin₁⟲[A+B] {n₁} fzero)
+Fin₁⟲[A+B] {suc n₁} (fsuc k₁) = cong fsuc (Fin₁⟲[A+B] {n₁} k₁   )
+
+[A+B]⟲Fin₁ : {n : Nat} -> (ab : [A+B]≡ n) -> Fin₁⇒[A+B] ([A+B]⇒Fin₁ ab) ≡ ab
+[A+B]⟲Fin₁ {zero  } z+z        = refl
+[A+B]⟲Fin₁ {suc n₁} (sucA ab₁) = cong sucA ([A+B]⟲Fin₁ {n₁} ab₁) 
+[A+B]⟲Fin₁ {suc n₁} (sucB ab₁) with [A+B]⟲Fin₁ {n₁} ab₁
+... | prf₁ = finj⇒[A+B] (πA′ ab₁) ∙ cong sucB prf₁
+
+--------------------------------------------------------------------------------

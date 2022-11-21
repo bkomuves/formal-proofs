@@ -82,6 +82,12 @@ count-trues []           = fzero
 count-trues (false ∷ bs) = finj (count-trues bs)
 count-trues (true  ∷ bs) = fsuc (count-trues bs)
 
+-- Note: A = number of trues, B = number of falses
+count-true-false : {n : Nat} -> BitVec n -> [A+B]≡ n
+count-true-false []           = z+z
+count-true-false (true  ∷ bs) = sucA (count-true-false bs)
+count-true-false (false ∷ bs) = sucB (count-true-false bs)
+
 {-
 ex1 = enumerate (BitVec-size 3)
 ex2 = Data.Vec.Base.map count-trues ex1
